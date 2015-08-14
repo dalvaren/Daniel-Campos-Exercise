@@ -1,0 +1,7 @@
+export GODIR=/usr/local
+export GOROOT=$GODIR/go
+export GOOS=darwin
+export GOARCH=amd64
+export GOPATH=$HOME/projects/Daniel-Campos-Exercise
+export GOBIN=$GOPATH/bin
+export PATH=$PATH:$GOBIN
