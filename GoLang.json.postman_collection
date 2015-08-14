@@ -1,0 +1,55 @@
+{
+	"id": "82ac4194-c98b-adc4-79aa-f2da17240c48",
+	"name": "GoLang",
+	"description": "",
+	"order": [
+		"fd53b5c7-cb33-73ec-8f4f-4dd61d613b18",
+		"57ec53fc-1678-8eab-15a8-65703c15aaee"
+	],
+	"folders": [],
+	"timestamp": 1439518469266,
+	"owner": 0,
+	"remoteLink": "",
+	"public": false,
+	"requests": [
+		{
+			"id": "57ec53fc-1678-8eab-15a8-65703c15aaee",
+			"headers": "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJJRCI6IkNocmlzdG9waGVyIiwiZXhwIjoxNDM5NTIyMTI0fQ.5_HvT-M3JIMdLRhAkAHkkQh8zzV_I_gYz2fgqBhEyFE\nContent-Type: application/json\n",
+			"url": "http://localhost:8081/api/private",
+			"pathVariables": {},
+			"preRequestScript": "",
+			"method": "GET",
+			"collectionId": "82ac4194-c98b-adc4-79aa-f2da17240c48",
+			"data": [],
+			"dataMode": "params",
+			"name": "JWT Basic Access with Token",
+			"description": "",
+			"descriptionFormat": "html",
+			"time": 1439518577265,
+			"version": 2,
+			"responses": [],
+			"tests": "",
+			"currentHelper": "normal",
+			"helperAttributes": {}
+		},
+		{
+			"id": "fd53b5c7-cb33-73ec-8f4f-4dd61d613b18",
+			"headers": "//Authorization: Bearer bg9c5dmid889riggceeiek8tgc0o0v7k8dn950n80fctj7hvmispn7p7bfrp7jirckmoregg84rg51neroreumtojc243al5i2t85n0\nContent-Type: application/json\n",
+			"url": "http://localhost:8081/api",
+			"preRequestScript": "",
+			"pathVariables": {},
+			"method": "GET",
+			"data": [],
+			"dataMode": "params",
+			"version": 2,
+			"tests": "",
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1439518525925,
+			"name": "JWT get token",
+			"description": "",
+			"collectionId": "82ac4194-c98b-adc4-79aa-f2da17240c48",
+			"responses": []
+		}
+	]
+}
