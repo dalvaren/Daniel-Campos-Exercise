@@ -1,5 +1,5 @@
 package main
- 
+
 // import (
 // 	"fmt"
 // 	"tasks"
@@ -21,7 +21,7 @@ func main() {
 
 	// Ping test
 	r.GET("/ping", func(c *gin.Context) {
-		c.String(200, "pong")
+		c.String(200, "pong2")
 	})
 
 	// Get user value
