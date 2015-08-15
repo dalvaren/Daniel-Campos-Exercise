@@ -17,6 +17,9 @@ import (
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth/providers/facebook"
+
+	"tasks"
+
 	"net/http"
 	"time"
 	"fmt"
@@ -40,6 +43,8 @@ func main() {
 	}
 
 	r := gin.Default()
+
+	tasks.SetRoutes(r)
 
 	public := r.Group("/api")
 
@@ -104,11 +109,11 @@ func getProviderFacebook(req *http.Request) (string, error) {
 	return "facebook", nil
 }
 
-func createJWTToken(userId string) (string, error) {
+func createJWTToken(userID string) (string, error) {
 	// Create the token
 	token := jwt_lib.New(jwt_lib.GetSigningMethod("HS256"))
 	// Set some claims
-	token.Claims["ID"] = userId
+	token.Claims["ID"] = userID
 	token.Claims["exp"] = time.Now().Add(time.Hour * 1).Unix()
 	// Sign and get the complete encoded token as a string
 	tokenString, err := token.SignedString([]byte(tokenSecret))
