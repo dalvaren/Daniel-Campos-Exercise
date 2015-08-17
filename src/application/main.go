@@ -14,9 +14,11 @@ import (
 	jwt_lib "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/contrib/jwt"
 	"github.com/gin-gonic/gin"
+	"github.com/tommy351/gin-cors"
 	"github.com/markbates/goth"
 	"github.com/markbates/goth/gothic"
 	"github.com/markbates/goth/providers/facebook"
+	// "github.com/itsjamie/gin-cors"
 
 	"tasks"
 
@@ -42,7 +44,15 @@ func main() {
 		return req.URL.Query().Get("state")
 	}
 
-	r := gin.Default()
+	r := gin.New()
+
+	r.Use(cors.Middleware(cors.Options{
+		AllowHeaders: []string{"Origin", "Accept", "Content-Type", "Authorization", "Access-Control-Allow-Headers", "Access-Control-Allow-Methods", "Access-Control-Allow-Origin"},
+		}))
+
+  // Global middlewares
+  r.Use(gin.Logger())
+  r.Use(gin.Recovery())
 
 	tasks.SetRoutes(r)
 
@@ -52,6 +62,7 @@ func main() {
 		tokenString, err := createJWTToken("Christopher")
 		if err != nil {
 			c.JSON(500, gin.H{"message": "Could not generate token"})
+			return
 		}
 		c.JSON(200, gin.H{"accessToken": tokenString})
 	})
