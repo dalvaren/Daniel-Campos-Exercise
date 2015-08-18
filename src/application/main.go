@@ -21,10 +21,12 @@ import (
 	// "github.com/itsjamie/gin-cors"
 
 	"tasks"
+	"config"
 
 	"net/http"
 	"time"
 	"fmt"
+	"os"
 )
 
 var (
@@ -32,6 +34,12 @@ var (
 )
 
 func main() {
+
+	path := "settings.json"
+	if len(os.Args) > 1 {
+		path = os.Args[0]
+	}
+	config.LoadConfig(path)
 
 	goth.UseProviders(
 		facebook.New("870850926323133", "54c9687312192961b6e2b5caa319db4b", "http://localhost:8081/auth/facebook/callback"),
@@ -50,6 +58,8 @@ func main() {
 		AllowHeaders: []string{"Origin", "Accept", "Content-Type", "Authorization", "Access-Control-Allow-Headers", "Access-Control-Allow-Methods", "Access-Control-Allow-Origin"},
 		}))
 
+	// Set Logger
+	gin.DefaultWriter = config.GetLogFile()
   // Global middlewares
   r.Use(gin.Logger())
   r.Use(gin.Recovery())
