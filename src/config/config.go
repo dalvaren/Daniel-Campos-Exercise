@@ -18,6 +18,7 @@ var (
   DB gorm.DB
   err error
   Settings map[string]interface{}
+  TokenSecret = "weAreTheChampions"
 )
 
 // GetLogFile opens the log file

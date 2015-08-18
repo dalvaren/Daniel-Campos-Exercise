@@ -7,6 +7,7 @@ import (
 	"strings"
 	"config"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/contrib/jwt"
 )
 
 // Task structure
@@ -57,22 +58,9 @@ func DropTasksTable() {
 
 // SetRoutes sets the crud and migration (if them exists) routes
 func SetRoutes(r *gin.Engine){
-	taskRoute := r.Group("/task")
+	taskRoute := r.Group("/api/task")
 
-	// taskRoute.GET("/migration/create", func(c *gin.Context) {
-	// 	CreateTasksTable()
-	// 	c.JSON(200, gin.H{"message": "task table created"})
-	// })
-	//
-	// taskRoute.GET("/migration/drop", func(c *gin.Context) {
-	// 	DropTasksTable()
-	// 	c.JSON(200, gin.H{"message": "task table droped"})
-	// })
-	//
-	// taskRoute.GET("/migration/sample", func(c *gin.Context) {
-	// 	CreateSampleTask()
-	// 	c.JSON(200, gin.H{"message": "sample task created"})
-	// })
+	taskRoute.Use(jwt.Auth(config.TokenSecret))
 
 	taskRoute.GET("/*id", func(c *gin.Context) {
 		id := c.Params.ByName("id")

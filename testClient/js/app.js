@@ -12,6 +12,7 @@ angular.module('application', [])
       var baseUrl = "http://localhost:8081"
       $scope.taskList = [];
       $scope.openModel = false;
+      $scope.accessToken = "";
 
       $http.defaults.headers.put = {
         'Access-Control-Allow-Origin': '*',
@@ -22,18 +23,33 @@ angular.module('application', [])
 
       $scope.getTasks = function () {
         $http({
-          url: baseUrl + '/task/',
+          url: baseUrl + '/api/task/',
           method: "GET",
           withCredentials: false,
           headers: {
-            'Content-Type': 'application/json; charset=utf-8'
+            'Content-Type': 'application/json; charset=utf-8',
+            'Authorization': 'Bearer ' + $scope.accessToken
           }
         }).success(function(response){
           $scope.taskList = response.items;
         });
       };
 
-      $scope.getTasks();
+      $scope.getBasicAuth = function () {
+        $http({
+          url: baseUrl + '/api/',
+          method: "GET",
+          withCredentials: false,
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8'
+          }
+        }).success(function(response){
+          $scope.accessToken = response.accessToken;
+          $scope.getTasks();
+        });
+      };
+
+      $scope.getBasicAuth()
 
       $scope.eraseTaskFields = function(){
         $scope.ID = '';
@@ -65,11 +81,12 @@ angular.module('application', [])
       $scope.deleteTask = function() {
         if($scope.ID != undefined && $scope.ID != '') {
           $http({
-            url: baseUrl + '/task/' + $scope.ID,
+            url: baseUrl + '/api/task/' + $scope.ID,
             method: "DELETE",
             withCredentials: false,
             headers: {
-              'Content-Type': 'application/json; charset=utf-8'
+              'Content-Type': 'application/json; charset=utf-8',
+              'Authorization': 'Bearer ' + $scope.accessToken
             }
           }).success(function(response){
             $scope.getTasks();
@@ -83,16 +100,17 @@ angular.module('application', [])
       $scope.saveTask = function() {
         if($scope.ID == undefined || $scope.ID == '') {
           $http({
-            url: baseUrl + '/task/',
+            url: baseUrl + '/api/task/',
             method: "POST",
             withCredentials: false,
             data    : {
               title: $scope.Title,
               description: $scope.Description,
-              priority: $scope.Priority
+              priority: $scope.Priority.toString()
             },
             headers: {
-              'Content-Type': 'application/json; charset=utf-8'
+              'Content-Type': 'application/json; charset=utf-8',
+              'Authorization': 'Bearer ' + $scope.accessToken
             }
           }).success(function(response){
             $scope.getTasks();
@@ -102,16 +120,17 @@ angular.module('application', [])
           });
         } else {
           $http({
-            url: baseUrl + '/task/' + $scope.ID,
+            url: baseUrl + '/api/task/' + $scope.ID,
             method: "PUT",
             withCredentials: false,
             data    : {
               title: $scope.Title,
               description: $scope.Description,
-              priority: $scope.Priority
+              priority: $scope.Priority.toString()
             },
             headers: {
-              'Content-Type': 'application/json; charset=utf-8'
+              'Content-Type': 'application/json; charset=utf-8',
+              'Authorization': 'Bearer ' + $scope.accessToken
             }
           }).success(function(response){
             $scope.getTasks();
@@ -124,7 +143,7 @@ angular.module('application', [])
 
       $scope.completeTask = function () {
         $http({
-          url: baseUrl + '/task/' + $scope.ID,
+          url: baseUrl + '/api/task/' + $scope.ID,
           method: "PUT",
           withCredentials: false,
           data    : {
@@ -134,7 +153,8 @@ angular.module('application', [])
             completed: true
           },
           headers: {
-            'Content-Type': 'application/json; charset=utf-8'
+            'Content-Type': 'application/json; charset=utf-8',
+            'Authorization': 'Bearer ' + $scope.accessToken
           }
         }).success(function(response){
           $scope.getTasks();

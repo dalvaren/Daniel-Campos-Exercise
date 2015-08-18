@@ -29,10 +29,6 @@ import (
 	"os"
 )
 
-var (
-	tokenSecret = "weAreTheChampions"
-)
-
 func main() {
 
 	path := ""
@@ -78,7 +74,7 @@ func main() {
 	})
 
 	private := r.Group("/api/private")
-	private.Use(jwt.Auth(tokenSecret))
+	private.Use(jwt.Auth(config.TokenSecret))
 
 	/*
 		Set this header in your request to get here.
@@ -109,7 +105,7 @@ func main() {
 			return
 		}
 
-		tokenString, err := createJWTToken("Christopher")
+		tokenString, err := createJWTToken(user.Email)
 		if err != nil {
 			c.JSON(500, gin.H{"message": "Could not generate token"})
 		}
@@ -137,6 +133,6 @@ func createJWTToken(userID string) (string, error) {
 	token.Claims["ID"] = userID
 	token.Claims["exp"] = time.Now().Add(time.Hour * 1).Unix()
 	// Sign and get the complete encoded token as a string
-	tokenString, err := token.SignedString([]byte(tokenSecret))
+	tokenString, err := token.SignedString([]byte(config.TokenSecret))
 	return tokenString, err
 }
