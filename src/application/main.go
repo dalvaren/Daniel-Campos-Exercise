@@ -35,7 +35,7 @@ var (
 
 func main() {
 
-	path := "settings.json"
+	path := ""
 	if len(os.Args) > 1 {
 		path = os.Args[0]
 	}
@@ -123,7 +123,7 @@ func main() {
 		})
 	})
 
-	r.Run(":8081")
+	r.Run(config.Settings["ListenAddress"].(string))
 }
 
 func getProviderFacebook(req *http.Request) (string, error) {
