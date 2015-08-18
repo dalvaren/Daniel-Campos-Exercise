@@ -92,8 +92,8 @@ func SetRoutes(r *gin.Engine){
 	type TaskJSON struct {
     Title     string `form:"title" json:"title" binding:"required"`
     Description string `json:"description" binding:"required"`
-    Priority string `json:"priority"`
-    IsCompleted bool `json:"iscompleted"`
+    IsCompleted bool `json:"completed" binding:"required"`
+		Priority string `json:"priority"`
 	}
 
 	taskRoute.POST("/", func(c *gin.Context) {
@@ -144,7 +144,7 @@ func SetRoutes(r *gin.Engine){
 		id := c.Params.ByName("id")
 
 		var json TaskJSON
-		c.BindJSON(&json)
+		c.Bind(&json)
 
 		if json.Title == "" {
 			c.JSON(500, gin.H{"message": "You need to send the title"})

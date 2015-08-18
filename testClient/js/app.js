@@ -109,6 +109,9 @@ angular.module('application', [])
               title: $scope.Title,
               description: $scope.Description,
               priority: $scope.Priority
+            },
+            headers: {
+              'Content-Type': 'application/json; charset=utf-8'
             }
           }).success(function(response){
             $scope.getTasks();
@@ -127,8 +130,11 @@ angular.module('application', [])
           data    : {
             title: $scope.Title,
             description: $scope.Description,
-            priority: $scope.Priority,
-            iscompleted: true
+            priority: $scope.Priority.toString(),
+            completed: true
+          },
+          headers: {
+            'Content-Type': 'application/json; charset=utf-8'
           }
         }).success(function(response){
           $scope.getTasks();
