@@ -4,7 +4,6 @@ import (
 	"errors"
 	"time"
 	"strconv"
-	"strings"
 	"config"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/contrib/jwt"
@@ -37,118 +36,11 @@ func SetRoutes(r *gin.Engine){
 
 	taskRoute.Use(jwt.Auth(config.TokenSecret))
 
-	// Retrieve task(s)
-	taskRoute.GET("/*id", func(c *gin.Context) {
-		// if "id" param exists
-		id := c.Params.ByName("id")
-		if id != "/" {
-			var task Task
-			taskID := strings.Replace(id, "/", "", -1)
-			config.DB.First(&task, taskID)
-			c.JSON(200, gin.H{"task": task})
-			return
-		}
-
-		// if is the main URI (list the tasks)
-		var tasks []Task
-		config.DB.Where("is_deleted = ?", false).Find(&tasks)
-		c.JSON(200, gin.H{"items": tasks})
-	})
-
-	// Create new task
-	taskRoute.POST("/", func(c *gin.Context) {
-		var json TaskJSON
-		c.Bind(&json)
-
-		if err := hasRequiredFields(json); err != nil {
-			c.JSON(500, gin.H{"message": err.Error()})
-			return
-		}
-
-		priority, err := setPriority(json)
-		if err != nil {
-			c.JSON(500, gin.H{"message": err.Error()})
-			return
-		}
-
-		rightNow := time.Now()
-		task := Task{
-			Title: json.Title,
-	    Description: json.Description,
-	    Priority: priority,
-	    CreatedAt: &rightNow,
-	    UpdatedAt: &rightNow,
-	    CompletedAt: &rightNow,
-	    IsDeleted: false,
-	    IsCompleted: false,
-		}
-		dbReturn := config.DB.Create(&task)
-		if dbReturn.Error != nil {
-			c.JSON(500, gin.H{"message": "Problem creating task."})
-		}
-		c.JSON(200, gin.H{"message": "task created", "task": dbReturn.Value})
-	})
-
-	// Update task
-	taskRoute.PUT("/:id", func(c *gin.Context) {
-		id := c.Params.ByName("id")
-
-		var json TaskJSON
-		c.Bind(&json)
-
-		if err := hasRequiredFields(json); err != nil {
-			c.JSON(500, gin.H{"message": err.Error()})
-			return
-		}
-
-		priority, err := setPriority(json)
-		if err != nil {
-			c.JSON(500, gin.H{"message": err.Error()})
-			return
-		}
-
-		isCompleted := false
-		if json.IsCompleted == true {
-			isCompleted = true
-		}
-
-		rightNow := time.Now()
-		var task Task
-		config.DB.First(&task, id)
-
-		completedAt := task.CompletedAt
-		if json.IsCompleted == true {
-			completedAt = &rightNow
-		}
-
-		task.Title = json.Title
-		task.Description = json.Description
-		task.Priority = priority
-		task.UpdatedAt = &rightNow
-		task.CompletedAt = completedAt
-		task.IsCompleted = isCompleted
-		dbReturn := config.DB.Save(&task)
-
-		if dbReturn.Error != nil {
-			c.JSON(500, gin.H{"message": "Problem updating task."})
-		}
-		c.JSON(200, gin.H{"message": "task updated", "task": dbReturn.Value, "json": json})
-	})
-
-	// Delete task (only set the value IsDeleted as true)
-	taskRoute.DELETE("/:id", func(c *gin.Context) {
-		id := c.Params.ByName("id")
-
-		var task Task
-		config.DB.First(&task, id)
-		task.IsDeleted = true
-		dbReturn := config.DB.Save(&task)
-
-		if dbReturn.Error != nil {
-			c.JSON(500, gin.H{"message": "Problem deleting task."})
-		}
-		c.JSON(200, gin.H{"message": "task deleted", "task": dbReturn.Value})
-	})
+	// Task CRUD
+	taskRoute.GET("/*id", taskRetrieveRoute)
+	taskRoute.POST("/", taskCreateRoute)
+	taskRoute.PUT("/:id", taskUpdateRoute)
+	taskRoute.DELETE("/:id", taskDeleteRoute)
 }
 
 // validate if request JSON has the required fields
