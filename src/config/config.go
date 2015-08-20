@@ -31,7 +31,7 @@ func GetLogFile() (*os.File){
 }
 
 // getConfigContent reads the settings file and returns its content as string
-func getConfigContent (path string) string{
+func getConfigContent(path string) string{
   dataFile, err := ioutil.ReadFile(path)
 	if err != nil {
     fmt.Println("Error: %v", err)
