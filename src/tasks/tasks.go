@@ -1,7 +1,7 @@
 package tasks
 
 import (
-	"fmt"
+	"errors"
 	"time"
 	"strconv"
 	"strings"
@@ -23,37 +23,12 @@ type Task struct {
     IsCompleted bool
 }
 
-func (this *Task) Add() {
-	config.DB.NewRecord(this)
-	config.DB.Create(&this)
-}
-
-func CreateSampleTask() {
-	rightNow := time.Now()
-	task := Task{
-		Title: "Title of the task",
-    Description: "Description of the task",
-    Priority: 1,
-    CreatedAt: &rightNow,
-    UpdatedAt: &rightNow,
-    CompletedAt: &rightNow,
-    IsDeleted: false,
-    IsCompleted: false,
-	}
-	config.DB.Create(&task)
-	// task.Add()
-}
-
-// CreateTasksTable is migration to generate the table (still using GORM)
-// TODO: change to goose
-func CreateTasksTable() {
-	config.DB.AutoMigrate(&Task{})
-}
-
-// DropTasksTable is migration to drop the table (still using GORM)
-// TODO: change to goose
-func DropTasksTable() {
-	config.DB.DropTable(&Task{})
+// TaskJSON is the requested task json structure for POST and PUT
+type TaskJSON struct {
+	Title     string `form:"title" json:"title" binding:"required"`
+	Description string `json:"description" binding:"required"`
+	IsCompleted bool `json:"completed" binding:"required"`
+	Priority string `json:"priority"`
 }
 
 // SetRoutes sets the crud and migration (if them exists) routes
@@ -62,7 +37,9 @@ func SetRoutes(r *gin.Engine){
 
 	taskRoute.Use(jwt.Auth(config.TokenSecret))
 
+	// Retrieve task(s)
 	taskRoute.GET("/*id", func(c *gin.Context) {
+		// if "id" param exists
 		id := c.Params.ByName("id")
 		if id != "/" {
 			var task Task
@@ -72,48 +49,32 @@ func SetRoutes(r *gin.Engine){
 			return
 		}
 
+		// if is the main URI (list the tasks)
 		var tasks []Task
 		config.DB.Where("is_deleted = ?", false).Find(&tasks)
 		c.JSON(200, gin.H{"items": tasks})
 	})
 
-	type TaskJSON struct {
-    Title     string `form:"title" json:"title" binding:"required"`
-    Description string `json:"description" binding:"required"`
-    IsCompleted bool `json:"completed" binding:"required"`
-		Priority string `json:"priority"`
-	}
-
+	// Create new task
 	taskRoute.POST("/", func(c *gin.Context) {
 		var json TaskJSON
 		c.Bind(&json)
 
-		if json.Title == "" {
-			c.JSON(500, gin.H{"message": "You need to send the title"})
+		if err := hasRequiredFields(json); err != nil {
+			c.JSON(500, gin.H{"message": err.Error()})
 			return
 		}
-		title := json.Title
 
-		if json.Description == "" {
-			c.JSON(500, gin.H{"message": "You need to send the description"})
+		priority, err := setPriority(json)
+		if err != nil {
+			c.JSON(500, gin.H{"message": err.Error()})
 			return
-		}
-		description := json.Description
-
-		priority := 1
-		if json.Priority != "" {
-			var err error
-			priority, err = strconv.Atoi(json.Priority)
-			if err != nil {
-				c.JSON(500, gin.H{"message": "Priority shall be a number"})
-				return
-			}
 		}
 
 		rightNow := time.Now()
 		task := Task{
-			Title: title,
-	    Description: description,
+			Title: json.Title,
+	    Description: json.Description,
 	    Priority: priority,
 	    CreatedAt: &rightNow,
 	    UpdatedAt: &rightNow,
@@ -128,30 +89,22 @@ func SetRoutes(r *gin.Engine){
 		c.JSON(200, gin.H{"message": "task created", "task": dbReturn.Value})
 	})
 
+	// Update task
 	taskRoute.PUT("/:id", func(c *gin.Context) {
 		id := c.Params.ByName("id")
 
 		var json TaskJSON
 		c.Bind(&json)
 
-		if json.Title == "" {
-			c.JSON(500, gin.H{"message": "You need to send the title"})
+		if err := hasRequiredFields(json); err != nil {
+			c.JSON(500, gin.H{"message": err.Error()})
 			return
 		}
 
-		if json.Description == "" {
-			c.JSON(500, gin.H{"message": "You need to send the description"})
+		priority, err := setPriority(json)
+		if err != nil {
+			c.JSON(500, gin.H{"message": err.Error()})
 			return
-		}
-
-		priority := 1
-		if json.Priority != "" {
-			var err error
-			priority, err = strconv.Atoi(json.Priority)
-			if err != nil {
-				c.JSON(500, gin.H{"message": "Priority shall be a number"})
-				return
-			}
 		}
 
 		isCompleted := false
@@ -182,6 +135,7 @@ func SetRoutes(r *gin.Engine){
 		c.JSON(200, gin.H{"message": "task updated", "task": dbReturn.Value, "json": json})
 	})
 
+	// Delete task (only set the value IsDeleted as true)
 	taskRoute.DELETE("/:id", func(c *gin.Context) {
 		id := c.Params.ByName("id")
 
@@ -197,12 +151,26 @@ func SetRoutes(r *gin.Engine){
 	})
 }
 
-// PrintTest prints a test string in console
-func PrintTest() {
-	fmt.Println("Package Tasks loaded!")
+// validate if request JSON has the required fields
+func hasRequiredFields(json TaskJSON) error {
+	if json.Title == "" {
+		return errors.New("You need to send the title")
+	}
+	if json.Description == "" {
+		return errors.New("You need to send the description")
+	}
+	return nil
 }
 
-// SumNumbers sums a and b
-func SumNumbers(a, b int) int{
-	return a + b
+// validate and set Priority
+func setPriority(json TaskJSON) (int, error){
+	priority := 1
+	if json.Priority != "" {
+		var err error
+		priority, err = strconv.Atoi(json.Priority)
+		if err != nil {
+			return 0, errors.New("Priority shall be a number")
+		}
+	}
+	return priority, nil
 }

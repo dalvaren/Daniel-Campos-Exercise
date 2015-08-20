@@ -8,7 +8,6 @@ import (
   "io/ioutil"
   "encoding/json"
   "github.com/jinzhu/gorm"
-  // libraries used for gorm
   _ "github.com/lib/pq"
   _ "github.com/go-sql-driver/mysql"
 )
@@ -31,6 +30,7 @@ func GetLogFile() (*os.File){
   return outputFile
 }
 
+// getConfigContent reads the settings file and returns its content as string
 func getConfigContent (path string) string{
   dataFile, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -40,6 +40,7 @@ func getConfigContent (path string) string{
 	return string(dataFile)
 }
 
+// requireSettingsField validates required settings fields
 func requireSettingsField(fieldName string) {
   field := Settings[fieldName]
   if field == nil {
@@ -64,6 +65,7 @@ func LoadConfig(path string) {
   startDB()
 }
 
+// startDB opens a connection with Database. It shall be loaded after the settings, since settings contains the needed URLs
 func startDB(){
   DB, err = gorm.Open("mysql", Settings["DatabaseUri"])
   if err != nil {
